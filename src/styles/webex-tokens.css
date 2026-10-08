@@ -1,0 +1,75 @@
+/*
+ * Exact values from Webex's join page (crosslaunch wbx.css, theme mds-theme-stable-darkWebex),
+ * read from the live page's computed styles.
+ * Note: Webex asks for `ciscosanstt` but never defines it, so the page renders in the fallback
+ * stack (Helvetica Neue / Helvetica / Arial). We use the same stack on purpose.
+ */
+:root {
+  --webex-font: ciscosanstt, 'Helvetica Neue', Helvetica, Arial, 'sans-serif', 'Microsoft Yahei', 'Times New Roman';
+  --webex-bg-base: #07101c;
+  --webex-text-primary: #fffffff2;
+  --webex-text-secondary: #ffffffb3;
+  --webex-link: #64b4fa;
+  --webex-card: #ffffff12;
+  --webex-card-hover: #ffffff1c;
+  --webex-card-pressed: #ffffff33;
+  --webex-control-active: #64b4fa;
+}
+
+/* Webex web app (pre-join, lobby, meeting): "Momentum" is Inter.var. Its ss02 feature is declared in Webex's @font-face but computes to "normal", so we leave it off. */
+@font-face {
+  font-family: Momentum;
+  font-style: normal;
+  font-weight: 1 1000;
+  font-display: swap;
+  src: url('/assets/fonts/Inter.var.woff2') format('woff2');
+}
+
+:root {
+  --webex-font-momentum: Momentum, Inter, Arial, 'Helvetica Neue', Helvetica, sans-serif;
+  --webex-page-dark: #121212;
+  --webex-lobby-bg: #1a1a1a;
+  --webex-outline: #ffffff80;
+  --webex-outline-focus: #fffffff2;
+  --webex-surface: #ffffff12;
+  --webex-disabled-bg: #ffffff33;
+  --webex-disabled-text: #ffffff66;
+  --webex-positive: #237f5f;
+  --webex-required: #fc8b98;
+  --webex-avatar: #545454;
+  --webex-warning: #f2990a;
+  --webex-warning-bg: #36220c;
+  --webex-negative: #d4371c;
+  --webex-primary-blue: #1170cf;
+}
+
+/* In-call + lobby (Webex web app, measured from the live meeting). */
+:root {
+  --webex-call-bg: linear-gradient(#1a1a1a, #0f0f0f);
+  --webex-tile: #ffffff1c;
+  --webex-muted-red: #fc8b98;
+  --webex-leave: #db1f2e;
+  --webex-bar-tab: #262626;
+  --webex-toast-bg: #000000;
+}
+@keyframes webex-toast-timer { from { width: 100%; } to { width: 0%; } }
+
+/* Pre-join exact: icon states, input ring, join overlay (read from the live app). */
+:root {
+  --webex-success: #3cc29a;
+  --webex-focus-ring: 0 0 0 2px #000, 0 0 0 4px #64b4fa, 0 0 0 5px #64b4fa59;
+  --webex-overlay: #000000b3;
+  --webex-spinner: #64b4fa;
+}
+@keyframes webex-spin { to { transform: rotate(360deg); } }
+
+/* Chrome's native permission button (<usermedia>) draws its own label in the OS font. */
+:root { --webex-font-native-control: Arial, Helvetica, 'Liberation Sans', sans-serif; }
+
+/* In-call tiling: tiles glide to their new slot when someone joins, and the newcomer fades/scales in. */
+:root { --webex-tile-move: 480ms cubic-bezier(0.4, 0, 0.2, 1); }
+@keyframes webex-tile-in { from { opacity: 0; scale: 0.92; } to { opacity: 1; scale: 1; } }
+
+@keyframes webex-dialog-fade { from { opacity: 0; } to { opacity: 1; } }
+
+@keyframes webex-reaction-float { 0% { opacity: 0; transform: translate(-50%, 20px) scale(0.6); } 15% { opacity: 1; transform: translate(-50%, 0) scale(1); } 100% { opacity: 0; transform: translate(-50%, -220px) scale(1.15); } }

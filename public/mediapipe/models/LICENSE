@@ -1,0 +1,4 @@
+This directory contains the "selfie_segmenter" model from Google's MediaPipe
+Solutions model zoo, licensed under the Apache License, Version 2.0.
+See https://ai.google.dev/edge/mediapipe/solutions/vision/image_segmenter
+and https://www.apache.org/licenses/LICENSE-2.0 for details.
