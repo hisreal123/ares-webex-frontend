@@ -24,6 +24,11 @@ export const JOIN_INTERVAL_MS = int(import.meta.env.VITE_JOIN_INTERVAL_MS, 4000,
 
 export const HOST_NAME = STATIC_PARTICIPANTS[0].name
 export const MEETING_TITLE = 'Welcome space'
+export const HOST_STARTED = import.meta.env.VITE_HOST_STARTED !== 'false'
+
+export function meetingTitleForUserCount(userCount: number) {
+  return userCount >= 2 ? `${userCount} users` : MEETING_TITLE
+}
 
 // Shown in the "Meeting info" popover (static for now).
 export const MEETING_NUMBER = '2363 421 2182'

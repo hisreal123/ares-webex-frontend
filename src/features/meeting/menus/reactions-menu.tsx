@@ -1,7 +1,7 @@
 import { ReactionLottie } from '@/components/webex/reaction-lottie'
 import { Popover } from './popover'
 
-export const REACTIONS = [
+const REACTIONS = [
   { id: 'thumb_up', label: 'Thumbs up (Ctrl + Shift + 1)' },
   { id: 'clap', label: 'Clap (Ctrl + Shift + 2)' },
   { id: 'prayer', label: 'Thanks' },

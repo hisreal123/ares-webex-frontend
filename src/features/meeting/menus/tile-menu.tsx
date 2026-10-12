@@ -4,8 +4,12 @@ import { Popover } from './popover'
 /** The menu behind the "..." on a participant's tile. It opens beside the button, on whichever side has room. */
 export function TileMenu({ name, anchor, onStage, onToggleStage, onClose }: { name: string; anchor: DOMRect; onStage: boolean; onToggleStage: () => void; onClose: () => void }) {
   const WIDTH = 352
+  const HEIGHT = 62
+  const MIN_TOP = 64
+  const BOTTOM_GAP = 114
   const right = anchor.right + 15.3 + WIDTH <= window.innerWidth - 8
-  const top = anchor.y + anchor.height / 2 - 31
+  const center = anchor.y + anchor.height / 2
+  const top = Math.max(MIN_TOP, Math.min(center - 31, window.innerHeight - BOTTOM_GAP - HEIGHT))
   return (
     <Popover
       label="More options menu"
@@ -13,7 +17,7 @@ export function TileMenu({ name, anchor, onStage, onToggleStage, onClose }: { na
       left={right ? anchor.right + 15.3 : anchor.x - 15.3 - WIDTH}
       top={top}
       side={right ? 'right' : 'left'}
-      arrowFromTop={31}
+      arrowFromTop={center - top}
       onClose={onClose}
       padding="px-[8px] py-[12px]"
     >

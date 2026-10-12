@@ -67,9 +67,6 @@ export function useVirtualBackground(
     const maskCanvas = document.createElement('canvas')
     const maskCtx = maskCanvas.getContext('2d')
 
-    setReady(false)
-    setError(false)
-
     async function start() {
       if (!outputCtx || !fgCtx || !maskCtx) throw new Error('2D canvas context unavailable')
 
@@ -78,7 +75,16 @@ export function useVirtualBackground(
         typeof selection === 'object' ? await loadBackgroundImage(selection.imageId) : null
       if (cancelled) return
 
-      await feederVideo.play()
+      for (let attempt = 0; ; attempt++) {
+        try {
+          await feederVideo.play()
+          break
+        } catch (playError) {
+          if (cancelled) return
+          if ((playError as DOMException).name !== 'AbortError' || attempt >= 5) throw playError
+          await new Promise((resolve) => setTimeout(resolve, 100))
+        }
+      }
       if (feederVideo.readyState < 2) {
         await new Promise<void>((resolve) => {
           feederVideo.onloadeddata = () => resolve()
@@ -156,6 +162,8 @@ export function useVirtualBackground(
       cancelAnimationFrame(rafId)
       capturedStream?.getTracks().forEach((track) => track.stop())
       feederVideo.srcObject = null
+      setReady(false)
+      setError(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `selection` is compared via `key`; `active` gates the effect
   }, [active, stream, key, blurVariant])

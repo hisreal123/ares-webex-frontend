@@ -1,7 +1,7 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { Icon, type IconName } from './icon'
 
-const PILL = 'inline-flex h-full items-center justify-center text-[16px] font-medium leading-[24px] text-[var(--webex-text-primary)]'
+const PILL = 'inline-flex h-full items-center justify-center text-[16px] font-medium leading-[24px] text-[var(--webex-text-primary)] outline-none focus-visible:[box-shadow:0_0_0_2px_#000,0_0_0_4px_#64b4fa,0_0_0_5px_#64b4fa59]'
 const HOVER = 'hover:bg-[var(--webex-surface)] active:bg-[var(--webex-disabled-bg)]'
 
 export function WarningBadge() {
@@ -32,13 +32,13 @@ export function SplitButton({ icon, label, warning, on, onToggle, onOptions, opt
   width: number
 }) {
   return (
-    <div className="relative mr-[8px] box-border inline-flex h-[40px] rounded-[20px] border border-[var(--webex-outline)]" style={{ minWidth: width }}>
-      <button type="button" aria-label={ariaLabel} data-tooltip={tooltip} onClick={onToggle} className={`${PILL} ${HOVER} relative flex-1 gap-[8px] whitespace-nowrap rounded-l-[20px] px-[16px]`}>
+    <div className="relative mr-[8px] box-border inline-flex h-[40px] rounded-[20px]" style={{ minWidth: width }}>
+      <button type="button" aria-label={ariaLabel} data-tooltip={tooltip} onClick={onToggle} className={`${PILL} ${HOVER} relative flex-1 gap-[8px] whitespace-nowrap rounded-l-[20px] border border-r-0 border-[var(--webex-outline)] px-[16px]`}>
         <Icon name={icon} size={20} className={on ? 'text-[var(--webex-success)]' : 'text-[var(--webex-muted-red)]'} />
         {label}
         {warning && <WarningBadge />}
       </button>
-      <button type="button" aria-label={optionsLabel} data-tooltip={optionsTooltip} data-popover-trigger onClick={(e) => { const r = e.currentTarget.getBoundingClientRect(); onOptions?.(r.x + r.width / 2) }} className={`${PILL} ${HOVER} w-[40px] rounded-r-[20px] border-l border-[var(--webex-outline)]`}>
+      <button type="button" aria-label={optionsLabel} data-tooltip={optionsTooltip} data-popover-trigger onClick={(e) => { const r = e.currentTarget.getBoundingClientRect(); onOptions?.(r.x + r.width / 2) }} className={`${PILL} ${HOVER} w-[40px] rounded-r-[20px] border border-l-0 border-[var(--webex-outline)] [box-shadow:inset_1px_0_0_var(--webex-outline)]`}>
         <Icon name="arrow-down-bold" size={20} />
       </button>
     </div>
@@ -111,13 +111,6 @@ export function Avatar({ initials, size = 124, fontSize }: { initials: string; s
   )
 }
 
-export function initialsOf(name: string) {
-  const words = name.trim().split(/\s+/).filter(Boolean)
-  if (!words.length) return ''
-  const first = words[0][0]
-  const last = words.length > 1 ? words[words.length - 1][0] : ''
-  return (first + last).toUpperCase()
-}
 
 export function LinkButton({ children, onClick }: { children: ReactNode; onClick?: () => void }) {
   return (
