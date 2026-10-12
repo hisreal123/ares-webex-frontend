@@ -10,14 +10,12 @@ type State =
 /** Looks the meeting up in the Ares backend (same endpoint the Teams clone uses). */
 export function useMeeting(meetingId: string | undefined, passcode: string | null): State {
   const [state, setState] = useState<State>({ status: 'loading' })
+  const api = import.meta.env.VITE_API_URL
+  // Static mode (default): no backend calls. Set VITE_USE_BACKEND=true later to look meetings up.
+  const offline = import.meta.env.VITE_USE_BACKEND !== 'true' || !meetingId || !api
 
   useEffect(() => {
-    const api = import.meta.env.VITE_API_URL
-    // Static mode (default): no backend calls. Set VITE_USE_BACKEND=true later to look meetings up.
-    if (import.meta.env.VITE_USE_BACKEND !== 'true' || !meetingId || !api) {
-      setState({ status: 'ready', meeting: null })
-      return
-    }
+    if (offline) return
     const controller = new AbortController()
     const params = new URLSearchParams({ meeting_id: meetingId })
     if (passcode) params.set('passcode', passcode)
@@ -39,7 +37,7 @@ export function useMeeting(meetingId: string | undefined, passcode: string | nul
       })
 
     return () => controller.abort()
-  }, [meetingId, passcode])
+  }, [offline, api, meetingId, passcode])
 
-  return state
+  return offline ? { status: 'ready', meeting: null } : state
 }

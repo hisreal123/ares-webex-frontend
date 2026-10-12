@@ -92,13 +92,13 @@ export function ChatPanel({ meetingTitle, onClose }: { meetingTitle: string; onC
         )}
       </div>
 
-      <div className="border-t border-[#ffffff33]">
+      <div className="border-t border-[#ffffff66]">
         <div aria-label="Message composer toolbar" className="flex h-[48px] items-center justify-between px-[16px] pt-[8px]">
           <div role="group" aria-label="Message composer options" className="flex h-[40px] w-[160px] items-center gap-[8px]">
-            <div className="m-[4px]"><IconButton name="markdown-bold" label="Markdown" active={markdown} onClick={() => setMarkdown((v) => !v)} /></div>
-            <div className="m-[4px] ml-[0px]"><IconButton name="emoji-happy-bold" label="Emoji" /></div>
-            <div className="m-[4px] ml-[0px]"><IconButton name="gif-bold" label="GIFs" /></div>
-            <div className="m-[4px] ml-[0px]"><IconButton name="mention-bold" label="Mention" /></div>
+            <div className="ml-[4px]"><IconButton name="markdown-bold" label="Markdown" active={markdown} onClick={() => setMarkdown((v) => !v)} /></div>
+            <IconButton name="emoji-happy-bold" label="Emoji" />
+            <IconButton name="gif-bold" label="GIFs" />
+            <IconButton name="mention-bold" label="Mention" />
           </div>
         </div>
         <div className="flex h-[60px] items-start">
@@ -109,13 +109,13 @@ export function ChatPanel({ meetingTitle, onClose }: { meetingTitle: string; onC
             maxLength={MAX}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
-            className="mt-[5px] h-[50px] w-[334px] resize-none bg-transparent pl-[16px] pr-[20px] pt-[12px] text-[14px] leading-[20px] outline-none placeholder:text-[13px] placeholder:text-[var(--webex-text-secondary)]"
+            className="mt-[5px] h-[50px] w-[334px] resize-none bg-transparent pl-[16px] pr-[20px] pt-[12px] text-[13px] leading-[18.46px] outline-none placeholder:text-[14px] placeholder:text-[var(--webex-text-secondary)]"
           />
           <div className="mt-[8px] ml-[4px] w-[40px] pl-[4px]">
             <IconButton name="send-regular" label="Send" bordered disabled={!text.trim()} onClick={send} />
           </div>
         </div>
-        <div className="px-[16px] pb-[8px] text-right text-[12px] leading-[20.6px] text-[var(--webex-text-secondary)]">{text.length} / {MAX}</div>
+        <div className="px-[16px] pb-[16px] text-right text-[12px] leading-[20.6px] text-[var(--webex-text-secondary)]">{text.length}/{MAX}</div>
       </div>
     </section>
   )

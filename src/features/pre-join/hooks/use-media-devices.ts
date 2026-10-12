@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 export type MediaDeviceOption = {
   deviceId: string
@@ -9,7 +9,7 @@ export function useMediaDevices(kind: MediaDeviceKind) {
   const [devices, setDevices] = useState<MediaDeviceOption[]>([])
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null)
 
-  async function refreshDevices() {
+  const refreshDevices = useCallback(async () => {
     if (!navigator.mediaDevices?.enumerateDevices) return
 
     const list = await navigator.mediaDevices.enumerateDevices()
@@ -27,7 +27,7 @@ export function useMediaDevices(kind: MediaDeviceKind) {
       }
       return matched[0]?.deviceId ?? null
     })
-  }
+  }, [kind])
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing device list from the mediaDevices API, an external system
@@ -37,7 +37,7 @@ export function useMediaDevices(kind: MediaDeviceKind) {
     return () => {
       navigator.mediaDevices?.removeEventListener?.('devicechange', refreshDevices)
     }
-  }, [])
+  }, [refreshDevices])
 
   return { devices, selectedDeviceId, setSelectedDeviceId, refreshDevices }
 }

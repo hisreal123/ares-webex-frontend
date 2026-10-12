@@ -1,31 +1,17 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 
-export type Permission = 'unknown' | 'granted' | 'denied'
+import type { BackgroundSelection } from '@/features/pre-join/types'
 
-type LocalMedia = {
-  micOn: boolean
-  camOn: boolean
-  micPermission: Permission
-  camPermission: Permission
-  videoStream: MediaStream | null
-  toggleMic: () => Promise<void>
-  toggleCam: () => Promise<void>
-  /** Ask for both at once (the lobby's "Use microphone and camera"). */
-  requestBoth: () => Promise<void>
-  /** Start the camera if the browser already granted access (no prompt). */
-  ensureCamera: () => Promise<void>
-  stopAll: () => void
-}
-
-const Ctx = createContext<LocalMedia | null>(null)
+import { LocalMediaContext, type Permission } from './use-local-media'
 
 async function queryPermission(name: 'microphone' | 'camera'): Promise<Permission> {
-  try {
-    const status = await navigator.permissions.query({ name: name as PermissionName })
-    return status.state === 'granted' ? 'granted' : status.state === 'denied' ? 'denied' : 'unknown'
-  } catch {
-    return 'unknown' // Safari/Firefox don't expose these; stay "unknown" until the user acts
-  }
+  const state = await navigator.permissions
+    ?.query({ name: name as PermissionName })
+    .then((status) => status.state, () => 'prompt' as const)
+  if (state === 'granted' || state === 'denied') return state
+  const kind = name === 'microphone' ? 'audioinput' : 'videoinput'
+  const devices = await navigator.mediaDevices?.enumerateDevices().catch(() => [] as MediaDeviceInfo[])
+  return devices?.some((d) => d.kind === kind && d.label) ? 'granted' : 'unknown'
 }
 
 // Mic and camera state lives above the router so the pre-join choices carry into the lobby.
@@ -35,11 +21,31 @@ export function LocalMediaProvider({ children }: { children: ReactNode }) {
   const [micPermission, setMicPermission] = useState<Permission>('unknown')
   const [camPermission, setCamPermission] = useState<Permission>('unknown')
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null)
+  const [background, setBackground] = useState<BackgroundSelection>('none')
+  const [mirror, setMirror] = useState(true)
   const audioRef = useRef<MediaStream | null>(null)
 
   useEffect(() => {
-    void queryPermission('microphone').then(setMicPermission)
-    void queryPermission('camera').then(setCamPermission)
+    const sync = () => {
+      void queryPermission('microphone').then(setMicPermission)
+      void queryPermission('camera').then(setCamPermission)
+    }
+    sync()
+    const statuses: PermissionStatus[] = []
+    for (const name of ['microphone', 'camera']) {
+      navigator.permissions
+        ?.query({ name: name as PermissionName })
+        .then((status) => {
+          status.addEventListener('change', sync)
+          statuses.push(status)
+        })
+        .catch(() => undefined)
+    }
+    navigator.mediaDevices?.addEventListener('devicechange', sync)
+    return () => {
+      statuses.forEach((status) => status.removeEventListener('change', sync))
+      navigator.mediaDevices?.removeEventListener('devicechange', sync)
+    }
   }, [])
 
   const stopStream = (s: MediaStream | null) => s?.getTracks().forEach((t) => t.stop())
@@ -100,14 +106,8 @@ export function LocalMediaProvider({ children }: { children: ReactNode }) {
   }, [videoStream])
 
   const value = useMemo(
-    () => ({ micOn, camOn, micPermission, camPermission, videoStream, toggleMic, toggleCam, requestBoth, ensureCamera, stopAll }),
-    [micOn, camOn, micPermission, camPermission, videoStream, toggleMic, toggleCam, requestBoth, ensureCamera, stopAll],
+    () => ({ micOn, camOn, micPermission, camPermission, videoStream, background, setBackground, mirror, setMirror, toggleMic, toggleCam, requestBoth, ensureCamera, stopAll }),
+    [micOn, camOn, micPermission, camPermission, videoStream, background, mirror, toggleMic, toggleCam, requestBoth, ensureCamera, stopAll],
   )
-  return <Ctx.Provider value={value}>{children}</Ctx.Provider>
-}
-
-export function useLocalMedia() {
-  const ctx = useContext(Ctx)
-  if (!ctx) throw new Error('useLocalMedia must be used inside <LocalMediaProvider>')
-  return ctx
+  return <LocalMediaContext.Provider value={value}>{children}</LocalMediaContext.Provider>
 }

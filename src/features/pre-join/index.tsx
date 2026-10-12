@@ -1,13 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 
+import { BackgroundGrid } from '@/components/webex/background-grid'
 import { CookieBanner } from '@/components/webex/cookie-banner'
-import { Avatar, initialsOf, LinkButton, PositiveButton } from '@/components/webex/controls'
+import { Avatar, LinkButton, PositiveButton } from '@/components/webex/controls'
+import { initialsOf } from '@/lib/initials'
 import { MediaControls } from '@/components/webex/media-controls'
 import { Icon } from '@/components/webex/icon'
 import { WebexShell } from '@/components/webex/shell'
+import { TooltipLayer } from '@/components/webex/tooltip-layer'
 import { PermissionDialog } from './permission-dialog'
 import { useGuestSession } from '@/hooks/use-guest-session'
 import { useLocalMedia } from '@/hooks/use-local-media'
+import { VirtualBackgroundVideo } from '@/lib/virtual-background/virtual-background-video'
+import { Popover } from '@/features/meeting/menus/popover'
 
 const PREVIEW_LOADING_MS = 1000
 
@@ -35,7 +40,7 @@ function NameField({ value, onChange, onSubmit }: { value: string; onChange: (v:
 
   return (
     <div className="min-h-[67.4px] w-full">
-      <label htmlFor="webex-name" className="flex gap-[8px] text-[14px] font-medium leading-[20px]">
+      <label htmlFor="webex-name" className="flex h-[27.43px] items-center gap-[8px] text-[14px] font-medium leading-[20px]">
         Name <span className="text-[var(--webex-required)]" aria-hidden>*</span>
       </label>
       <div className="mt-[8px] flex h-[32px] items-center rounded-[8px] border border-[var(--webex-outline)] py-[5.5px] pl-[12px] pr-[6px] transition-shadow focus-within:border-[#ffffffe6] focus-within:[box-shadow:var(--webex-focus-ring)]">
@@ -53,7 +58,7 @@ function NameField({ value, onChange, onSubmit }: { value: string; onChange: (v:
           className="h-[20px] min-w-0 flex-1 bg-transparent text-[14px] leading-[20px] text-[var(--webex-text-primary)] outline-none"
         />
         {value && (
-          <button type="button" aria-label="Clear" onClick={() => onChange('')} className="ml-[4px] flex h-[20px] w-[20px] items-center justify-center rounded-full border border-transparent p-px hover:bg-[var(--webex-surface)]">
+          <button type="button" aria-label="Clear input" onClick={() => onChange('')} className="ml-[4px] flex h-[20px] w-[20px] items-center justify-center rounded-full border border-transparent p-px hover:bg-[var(--webex-surface)]">
             <Icon name="cancel-bold" size={14} />
           </button>
         )}
@@ -84,10 +89,9 @@ export function PreJoinPage({ title, onJoin }: { title: string; onJoin: () => vo
   const guest = useGuestSession()
   const media = useLocalMedia()
   const [previewReady, setPreviewReady] = useState(false)
-  const [mirror, setMirror] = useState(true)
   const [joining, setJoining] = useState(false)
-  const [dialogStep, setDialogStep] = useState<1 | 2 | null>(null)
-  const videoRef = useRef<HTMLVideoElement>(null)
+  const [dialogStep, setDialogStep] = useState<1 | 2 | null>(1)
+  const [bgAnchor, setBgAnchor] = useState<DOMRect | null>(null)
 
   useEffect(() => {
     const t = setTimeout(() => setPreviewReady(true), PREVIEW_LOADING_MS)
@@ -95,17 +99,7 @@ export function PreJoinPage({ title, onJoin }: { title: string; onJoin: () => vo
   }, [])
 
   // Webex asks for mic + camera as soon as the preview is up, unless the browser already allowed both.
-  const askedRef = useRef(false)
-  useEffect(() => {
-    if (!previewReady || askedRef.current) return
-    askedRef.current = true
-    if (media.micPermission !== 'granted' || media.camPermission !== 'granted') setDialogStep(1)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [previewReady])
-
-  useEffect(() => {
-    if (videoRef.current) videoRef.current.srcObject = media.videoStream
-  }, [media.videoStream, previewReady])
+  const needsPermission = media.micPermission !== 'granted' || media.camPermission !== 'granted'
 
   useEffect(() => {
     // Webex starts the camera by itself once the browser has already granted access.
@@ -130,13 +124,13 @@ export function PreJoinPage({ title, onJoin }: { title: string; onJoin: () => vo
         variant="prejoin"
         momentum
         footer={
-          <div className="absolute inset-x-0 bottom-0 flex h-[44px] items-end justify-center p-[12px] text-[12px] leading-[16px] text-[var(--webex-text-secondary)]">
+          <div className="absolute inset-x-0 bottom-0 flex h-[44px] items-start justify-center p-[12px] text-[12px] leading-[20px] text-[var(--webex-text-secondary)]">
             <span>
               By using Webex, you accept the{' '}
-              <a href="#" className="inline-flex items-center gap-[2px] text-[var(--webex-link)] underline">Terms of Service <Icon name="pop-out-regular" size={14} /></a>,{' '}
-              <a href="#" className="inline-flex items-center gap-[2px] text-[var(--webex-link)] underline">Privacy Statement <Icon name="pop-out-regular" size={14} /></a>.
+              <a href="#" className="inline-flex items-center gap-[4px] text-[var(--webex-link)] underline">Terms of Service <Icon name="pop-out-regular" size={12} /></a>,{' '}
+              <a href="#" className="inline-flex items-center gap-[4px] text-[var(--webex-link)] underline">Privacy Statement <Icon name="pop-out-regular" size={12} /></a>.
             </span>
-            <span className="mx-[8px] h-[16px] w-px bg-[var(--webex-disabled-bg)]" />
+            <span className="mx-[8px] mt-[2px] h-[16px] w-px bg-[var(--webex-disabled-bg)]" />
             <a href="#" className="text-[var(--webex-link)] underline">Report an issue</a>
           </div>
         }
@@ -147,18 +141,28 @@ export function PreJoinPage({ title, onJoin }: { title: string; onJoin: () => vo
             <header className="mb-[-8px] mt-[32px] px-[24px] text-[24px] font-medium leading-[32px]">{title}</header>
 
             <div className="flex h-[410px] items-center justify-center p-[16px]">
-              <div className="relative flex h-[378px] w-[672px] items-center justify-center overflow-hidden rounded-[8px] border border-[#ffffff1a] bg-[var(--webex-surface)]">
+              <div className="relative flex h-[378px] w-[672px] items-center justify-center overflow-hidden rounded-[8px] border border-[#ffffff1c] bg-[var(--webex-surface)]" data-tooltip-boundary>
                 {!previewReady ? (
                   <Spinner />
                 ) : media.camOn ? (
                   <>
-                    <video ref={videoRef} autoPlay playsInline muted className={`h-full w-full rounded-[8px] object-cover ${mirror ? '-scale-x-100' : ''}`} />
-                    <button type="button" aria-label={mirror ? "Don't mirror my video" : 'Mirror my video'} onClick={() => setMirror((m) => !m)} className="absolute right-[10px] top-[10px] flex h-[32px] w-[32px] items-center justify-center rounded-full bg-[#000000f2]">
-                      <Icon name="mirror-bold" size={16} />
+                    <VirtualBackgroundVideo stream={media.videoStream} selection={media.background} blurVariant="standard" mirror={media.mirror} className="h-full w-full rounded-[8px] object-cover" />
+                    <button type="button" aria-label={media.mirror ? "Don't mirror my video" : 'Mirror my video'} data-tooltip={media.mirror ? "Don't mirror my video" : 'Mirror my video'} data-tooltip-side="below" onClick={() => media.setMirror(!media.mirror)} className="absolute right-[9px] top-[9px] flex h-[32px] w-[32px] items-center justify-center rounded-full border border-transparent bg-[#000000f2]">
+                      <Icon name="mirror-filled" size={16} />
                     </button>
-                    <span className="absolute bottom-[8px] left-[8px] rounded-[4px] bg-[#00000080] px-[8px] py-[2px] text-[14px] font-medium leading-[20px]">Preview</span>
-                    <button type="button" className="absolute bottom-[8px] right-[8px] flex h-[32px] items-center gap-[6px] rounded-[20px] bg-[#000000f2] px-[12px] text-[16px] font-medium leading-[24px]">
-                      <Icon name="video-effect-bold" size={16} /> Backgrounds
+                    <span className="absolute bottom-[9px] left-[9px] rounded-[4px] bg-[#00000080] px-[8px] py-[2px] text-[14px] font-medium leading-[20px]">Preview</span>
+                    <button
+                      type="button"
+                      data-popover-trigger
+                      aria-haspopup="menu"
+                      aria-expanded={!!bgAnchor}
+                      onClick={(e) => {
+                        const rect = e.currentTarget.getBoundingClientRect()
+                        setBgAnchor((cur) => (cur ? null : rect))
+                      }}
+                      className="absolute bottom-[9px] right-[9px] flex h-[32px] items-center gap-[6px] rounded-[20px] border border-transparent bg-[#000000f2] px-[12px] text-[16px] font-medium leading-[24px]"
+                    >
+                      <Icon name="magic-pen-bold" size={16} /> Backgrounds
                     </button>
                   </>
                 ) : showPermissionPrompt ? (
@@ -195,14 +199,32 @@ export function PreJoinPage({ title, onJoin }: { title: string; onJoin: () => vo
             <PositiveButton disabled={!canJoin} onClick={join} aria-label={`Join meeting ${title}`}>
               {joining ? <Spinner size={24} /> : 'Join meeting'}
             </PositiveButton>
-            <hr className="mt-[32px] h-px border-0 bg-[var(--webex-disabled-bg)]" />
+            <hr className="mt-[32px] h-px border-0 bg-[linear-gradient(90deg,#fff0,#fff3_22.4%,#fff3_72.4%,#fff0)]" />
             <p className="mt-[24px] text-[16px] leading-[24px] text-[var(--webex-text-secondary)]">
               If you're the host or have a Webex account, <LinkButton>sign in</LinkButton>.
             </p>
           </div>
         </div>
+        {bgAnchor && (
+          <Popover
+            label="Virtual background"
+            width={338}
+            left={bgAnchor.x + bgAnchor.width / 2 - 169}
+            arrowFromLeft={169}
+            side="above"
+            offsetBottom={window.innerHeight - bgAnchor.top + 15.3}
+            onClose={() => setBgAnchor(null)}
+            padding="px-[8px] py-[12px]"
+          >
+            <div className="flex h-[36px] items-center gap-[8px] px-[12px] py-[8px]">
+              <Icon name="magic-pen-bold" size={16} />
+              <span className="text-[14px] font-bold leading-[20px]">Virtual background</span>
+            </div>
+            <BackgroundGrid value={media.background} onChange={media.setBackground} />
+          </Popover>
+        )}
       </WebexShell>
-      {dialogStep && !joining && (
+      {previewReady && needsPermission && dialogStep && !joining && (
         <PermissionDialog
           step={dialogStep}
           onUse={async () => {
@@ -219,6 +241,7 @@ export function PreJoinPage({ title, onJoin }: { title: string; onJoin: () => vo
         </div>
       )}
       <CookieBanner surface="app" />
+      <TooltipLayer />
     </>
   )
 }

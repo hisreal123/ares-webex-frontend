@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
-import { Avatar, initialsOf } from '@/components/webex/controls'
+import { Avatar } from '@/components/webex/controls'
+import { initialsOf } from '@/lib/initials'
 import { Icon } from '@/components/webex/icon'
 import { MEETING_LINK, MEETING_NUMBER, VIDEO_SYSTEM_ADDRESS } from '../config'
 import { Popover } from './popover'
@@ -31,22 +32,26 @@ export function MeetingInfo({ title, hostName, onClose }: { title: string; hostN
       >
         {copied ? 'Copied' : 'Copy meeting information'}
       </button>
+      <div className="h-px bg-[#ffffff33]" />
 
-      <div className="mt-[25.2px] flex items-center">
-        <span className={`${LABEL} mr-[8px]`}>Meeting link</span>
-        <button type="button" aria-label="Copy meeting link" onClick={() => copy(link)} className="flex h-[28px] w-[28px] items-center justify-center rounded-full hover:bg-[var(--webex-surface)]">
-          <Icon name="copy-bold" size={16} />
-        </button>
+      <div className="pl-[4px]">
+        <div className="mt-[4px] flex h-[28px] items-center">
+          <span className={`${LABEL} mr-[8px]`}>Meeting link</span>
+          <button type="button" aria-label="Copy meeting link" onClick={() => copy(link)} className="flex h-[28px] w-[28px] items-center justify-center rounded-full hover:bg-[var(--webex-surface)]">
+            <Icon name="copy-bold" size={16} />
+          </button>
+        </div>
+        <div className={`${VALUE} w-[324px]`}>{link}</div>
+
+        <div className={`${LABEL} mt-[16px]`}>Meeting number</div>
+        <div className={VALUE}>{MEETING_NUMBER}</div>
+
+        <div className={`${LABEL} mt-[16px]`}>Join by video system</div>
+        <div className={`${VALUE} w-[324px]`}>{VIDEO_SYSTEM_ADDRESS}</div>
       </div>
-      <div className={`${VALUE} w-[324px]`}>{link}</div>
 
-      <div className={`${LABEL} mt-[16px]`}>Meeting number</div>
-      <div className={VALUE}>{MEETING_NUMBER}</div>
-
-      <div className={`${LABEL} mt-[16px]`}>Join by video system</div>
-      <div className={VALUE}>{VIDEO_SYSTEM_ADDRESS}</div>
-
-      <div className={`${LABEL} mt-[29px]`}>Webex Support</div>
+      <div className="mt-[16px] h-px bg-[#ffffff33]" />
+      <div className={`${LABEL} mt-[12px]`}>Webex Support</div>
       <div className="mt-[4px] flex gap-[12px] text-[var(--webex-link)]">
         <a href="#" className="rounded-[4px] hover:underline">About</a>
         <a href="#" className="inline-flex items-center gap-[4px] rounded-[4px] hover:underline">Help <Icon name="pop-out-regular" size={14} /></a>

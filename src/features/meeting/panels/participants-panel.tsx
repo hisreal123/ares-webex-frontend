@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 
-import { Avatar, initialsOf } from '@/components/webex/controls'
+import { Avatar } from '@/components/webex/controls'
+import { initialsOf } from '@/lib/initials'
 import { Icon } from '@/components/webex/icon'
 import { SortMenu, type SortKey } from '../menus/sort-menu'
 
@@ -26,7 +27,7 @@ function Row({ p, onMenu }: { p: PanelPerson; onMenu?: (name: string, anchor: DO
         ) : null}
       </div>
       {p.raised && (
-        <button type="button" aria-label={`${p.name} has raised hand`} className="flex h-[32px] w-[32px] items-center justify-center rounded-full text-[var(--webex-warning)] hover:bg-[var(--webex-disabled-bg)]">
+        <button type="button" aria-label={`${p.name} has raised hand`} className="flex h-[32px] w-[32px] items-center justify-center rounded-full text-[var(--webex-text-primary)] hover:bg-[var(--webex-disabled-bg)]">
           <Icon name="raise-hand-regular" size={16} />
         </button>
       )}

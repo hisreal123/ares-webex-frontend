@@ -7,10 +7,7 @@ export function useSpeakingIndicator(enabled: boolean) {
   const [isSpeaking, setIsSpeaking] = useState(false)
 
   useEffect(() => {
-    if (!enabled) {
-      setIsSpeaking(false)
-      return
-    }
+    if (!enabled) return
 
     let cancelled = false
     let audioContext: AudioContext | null = null
@@ -68,8 +65,9 @@ export function useSpeakingIndicator(enabled: boolean) {
       if (silenceTimeout) clearTimeout(silenceTimeout)
       stream?.getTracks().forEach((track) => track.stop())
       void audioContext?.close()
+      setIsSpeaking(false)
     }
   }, [enabled])
 
-  return isSpeaking
+  return enabled && isSpeaking
 }

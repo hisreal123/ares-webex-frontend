@@ -1,17 +1,8 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useMemo, useState, type ReactNode } from 'react'
+
+import { GuestSessionContext } from './use-guest-session'
 
 const STORAGE_KEY = 'webex.guestName'
-
-type GuestSession = {
-  name: string
-  remember: boolean
-  setName: (name: string) => void
-  setRemember: (remember: boolean) => void
-  /** Persist (or clear) the name according to "Remember me". Called when the guest joins. */
-  commit: () => void
-}
-
-const Ctx = createContext<GuestSession | null>(null)
 
 function readSaved() {
   try {
@@ -35,11 +26,5 @@ export function GuestSessionProvider({ children }: { children: ReactNode }) {
   }, [name, remember])
 
   const value = useMemo(() => ({ name, remember, setName, setRemember, commit }), [name, remember, commit])
-  return <Ctx.Provider value={value}>{children}</Ctx.Provider>
-}
-
-export function useGuestSession() {
-  const ctx = useContext(Ctx)
-  if (!ctx) throw new Error('useGuestSession must be used inside <GuestSessionProvider>')
-  return ctx
+  return <GuestSessionContext.Provider value={value}>{children}</GuestSessionContext.Provider>
 }

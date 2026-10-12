@@ -5,15 +5,10 @@ export function useLocalCamera(enabled: boolean) {
   const [error, setError] = useState(false)
 
   useEffect(() => {
-    if (!enabled) {
-      setStream(null)
-      setError(false)
-      return
-    }
+    if (!enabled) return
 
     let cancelled = false
     let activeStream: MediaStream | null = null
-    setError(false)
 
     async function start() {
       try {
@@ -24,6 +19,7 @@ export function useLocalCamera(enabled: boolean) {
         }
         activeStream = mediaStream
         setStream(mediaStream)
+        setError(false)
       } catch {
         // camera unavailable or permission denied — tile falls back to the placeholder avatar
         if (!cancelled) setError(true)
@@ -35,8 +31,9 @@ export function useLocalCamera(enabled: boolean) {
     return () => {
       cancelled = true
       activeStream?.getTracks().forEach((track) => track.stop())
+      setStream(null)
     }
   }, [enabled])
 
-  return { stream, error }
+  return { stream: enabled ? stream : null, error: enabled && error }
 }

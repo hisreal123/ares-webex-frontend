@@ -9,6 +9,7 @@ export function Popover({
   side = 'below',
   top,
   offsetTop,
+  offsetBottom,
   arrowFromTop = 31,
   arrowFromLeft = 0,
   onClose,
@@ -27,6 +28,7 @@ export function Popover({
   arrowFromTop?: number
   /** override for `below`: distance from the viewport top (default 55.3) */
   offsetTop?: number
+  offsetBottom?: number
   /** arrow centre, measured from the popover's left edge */
   arrowFromLeft?: number
   onClose: () => void
@@ -34,6 +36,10 @@ export function Popover({
   padding?: string
 }) {
   const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    document.dispatchEvent(new Event('webex-popover-open'))
+  }, [])
 
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
@@ -52,9 +58,10 @@ export function Popover({
     <div
       ref={ref}
       role="dialog"
+      data-popover
       aria-label={label}
       className={`fixed z-[1003] box-border rounded-[8px] border border-[#ffffff33] bg-black text-[14px] leading-[20px] ${padding}`}
-      style={{ width, right, left, ...(side === 'below' ? { top: offsetTop ?? 55.3 } : side === 'above' ? { bottom: 67.3 } : { top }), animation: 'webex-dialog-fade 140ms ease-out both' }}
+      style={{ width, right, left, ...(side === 'below' ? { top: offsetTop ?? 55.3 } : side === 'above' ? { bottom: offsetBottom ?? 67.3 } : { top }), animation: 'webex-dialog-fade 140ms ease-out both' }}
     >
       <div
         aria-hidden
