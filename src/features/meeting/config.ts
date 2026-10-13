@@ -1,5 +1,5 @@
-// Static meeting simulation (no backend yet): the host is already in the meeting and the other
-// applicants join one by one after the guest is admitted.
+// Static meeting simulation (no backend yet): the guest is alone when admitted and the other
+// applicants join one by one.
 
 const int = (raw: unknown, fallback: number, min: number, max: number) => {
   const n = Math.floor(Number(raw))

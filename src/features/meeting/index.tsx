@@ -261,8 +261,8 @@ export function MeetingPage({ title, onLeave, showNetworkIssue = false }: { titl
     return () => clearTimeout(t)
   }, [])
 
-  // The host is already in the call when you're admitted; everyone else joins one by one.
-  const [remoteCount, setRemoteCount] = useState(JOIN_INTERVAL_MS === 0 ? APPLICANT_COUNT : 1)
+  // You're alone when admitted; everyone else joins one by one.
+  const [remoteCount, setRemoteCount] = useState(JOIN_INTERVAL_MS === 0 ? APPLICANT_COUNT : 0)
   useEffect(() => {
     if (remoteCount >= APPLICANT_COUNT) return
     const t = setTimeout(() => setRemoteCount((c) => c + 1), JOIN_INTERVAL_MS)
